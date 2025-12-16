@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM Mobile Editable</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body{
+  font-family:"Prompt",sans-serif;
+  background:#f6fbf9;
+  margin:0;
+  padding:20px;
+}
+h2,h3{margin-bottom:10px}
+
+/* ===== Dashboard ===== */
+.dashboard{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px;
+  margin-bottom:20px;
+}
+.card{
+  background:#fff;
+  padding:14px;
+  border-radius:10px;
+  text-align:center;
+}
+.card span{font-size:26px;font-weight:600}
+.green{background:#e6f7ee}
+.yellow{background:#fff8d6}
+.orange{background:#ffe3c2}
+.red{background:#ffd6d6}
+
+/* ===== Form ===== */
+.form-box{
+  background:#fff;
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
+/* ===== Form Grid ===== */
+.form-grid{
+  display:grid;
+  grid-template-columns:1.2fr 1.5fr 1fr 1fr 1fr 2fr;
+  gap:12px;
+  align-items:stretch;
+}
+
+/* ===== Input with Icon ===== */
+.input-group{
+  position:relative;
+}
+.input-group i{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#999;
+  transition:.2s;
+}
+.input-group input,
+.input-group textarea{
+  width:100%;
+  height:44px;
+  padding:10px 12px 10px 36px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-family:"Prompt",sans-serif;
+  font-size:14px;
+  box-sizing:border-box;
+  transition:.25s;
+}
+.input-group textarea{
+  resize:none;
+}
+
+/* ===== Hover & Focus ===== */
+.input-group input:hover,
+.input-group textarea:hover{
+  border-color:#1c8c6e;
+}
+.input-group input:focus,
+.input-group textarea:focus{
+  outline:none;
+  border-color:#1c8c6e;
+  box-shadow:0 0 0 3px rgba(28,140,110,.15);
+}
+.input-group input:focus + i,
+.input-group textarea:focus + i{
+  color:#1c8c6e;
+}
+
+/* ===== Datepicker ===== */
+.date-wrapper{
+  position:relative;
+}
+.calendar{
+  position:absolute;
+  top:48px;
+  left:0;
+  background:#fff;
+  border:1px solid #ccc;
+  border-radius:8px;
+  padding:10px;
+  z-index:10;
+  width:260px;
+  display:none;
+}
+.calendar-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+}
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+  text-align:center;
+}
+.calendar div{
+  padding:6px;
+  cursor:pointer;
+  border-radius:4px;
+}
+.calendar div:hover{background:#e6f7ee}
+.calendar .day-header{
+  font-weight:600;
+  cursor:default;
+}
+
+/* ===== Buttons ===== */
+button{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  background:#1c8c6e;
+  color:#fff;
+  cursor:pointer;
+}
+.gray{background:#777}
+.redbtn{background:#c0392b}
+.small{font-size:12px;padding:6px 8px}
+
+/* ===== Table ===== */
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{padding:10px;border:1px solid #ddd}
+th{background:#eef7f4}
+.follow-green{background:#e6f7ee}
+.follow-yellow{background:#fff8d6}
+.follow-orange{background:#ffe3c2}
+.follow-red{background:#ffd6d6}
+
+/* ===== Mobile ===== */
+.mobile-list{display:none}
+@media(max-width:768px){
+  .form-grid{grid-template-columns:1fr}
+  table{display:none}
+  .dashboard{grid-template-columns:repeat(2,1fr)}
+  .mobile-list{display:flex;flex-direction:column;gap:12px}
+  .mobile-card{background:#fff;padding:14px;border-radius:12px}
+  .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+  .actions{display:flex;gap:10px;margin-top:10px}
+  .actions button{flex:1}
+}
+</style>
+</head>
+
+<body>
+
+<h2>📊 CRM ระบบติดตามลูกค้า</h2>
+
+<div class="dashboard">
+  <div class="card green">🟢 ปกติ<br><span id="dGreen">0</span></div>
+  <div class="card yellow">🟡 ควรติดตาม<br><span id="dYellow">0</span></div>
+  <div class="card orange">🟠 เร่งติดตาม<br><span id="dOrange">0</span></div>
+  <div class="card red">🔴 เสี่ยงสูง<br><span id="dRed">0</span></div>
+</div>
+
+<div class="form-box">
+<h3>➕ เพิ่ม / ✏️ แก้ไข การติดตาม</h3>
+
+<div class="form-grid">
+
+  <!-- Date -->
+  <div class="input-group date-wrapper">
+    <input type="text" id="fDate" placeholder="DD/MM/YYYY (พ.ศ.)" readonly>
+    <i class="fa-solid fa-calendar-days"></i>
+    <div id="calendar" class="calendar"></div>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="fName" placeholder="โรงพยาบาล / รพ.สต">
+    <i class="fa-solid fa-hospital"></i>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="fContact" placeholder="ผู้ติดต่อ">
+    <i class="fa-solid fa-user"></i>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="fDepartment" placeholder="แผนก">
+    <i class="fa-solid fa-sitemap"></i>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="fProvince" placeholder="จังหวัด">
+    <i class="fa-solid fa-location-dot"></i>
+  </div>
+
+  <div class="input-group">
+    <textarea id="fNote" placeholder="รายละเอียดการติดตาม"></textarea>
+    <i class="fa-solid fa-clipboard"></i>
+  </div>
+
+</div>
+<br>
+<button onclick="saveEntry()">💾 บันทึก</button>
+<button class="gray" onclick="clearForm()">ยกเลิก</button>
+</div>
+
+<table id="crmTable">
+<thead>
+<tr>
+  <th>วันที่</th>
+  <th>โรงพยาบาล</th>
+  <th>ผู้ติดต่อ</th>
+  <th>แผนก</th>
+  <th>จังหวัด</th>
+  <th>ไม่ได้พบ</th>
+  <th>สถานะ</th>
+  <th>รายละเอียด</th>
+  <th>จัดการ</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div id="mobileList" class="mobile-list"></div>
+
+<script>
+/* ===== Datepicker (Thai BE) ===== */
+let cMonth=new Date().getMonth(), cYear=new Date().getFullYear();
+const cal=document.getElementById("calendar"), fDate=document.getElementById("fDate");
+
+fDate.onclick=()=>{cal.style.display="block";renderCalendar();}
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".date-wrapper")) cal.style.display="none";
+});
+
+function renderCalendar(){
+  cal.innerHTML="";
+  const months=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  cal.innerHTML+=`
+    <div class="calendar-header">
+      <button onclick="changeMonth(-1)">‹</button>
+      <b>${months[cMonth]} ${cYear+543}</b>
+      <button onclick="changeMonth(1)">›</button>
+    </div>`;
+  const grid=document.createElement("div");
+  grid.className="calendar-grid";
+  ["อา","จ","อ","พ","พฤ","ศ","ส"].forEach(d=>{
+    const el=document.createElement("div");
+    el.textContent=d; el.className="day-header"; grid.appendChild(el);
+  });
+  const first=new Date(cYear,cMonth,1).getDay();
+  const days=new Date(cYear,cMonth+1,0).getDate();
+  for(let i=0;i<first;i++) grid.appendChild(document.createElement("div"));
+  for(let d=1;d<=days;d++){
+    const cell=document.createElement("div");
+    cell.textContent=d;
+    cell.onclick=()=>{
+      fDate.value=`${String(d).padStart(2,"0")}/${String(cMonth+1).padStart(2,"0")}/${cYear+543}`;
+      cal.style.display="none";
+    };
+    grid.appendChild(cell);
+  }
+  cal.appendChild(grid);
+}
+function changeMonth(n){
+  cMonth+=n;
+  if(cMonth<0){cMonth=11;cYear--}
+  if(cMonth>11){cMonth=0;cYear++}
+  renderCalendar();
+}
+function dmyBEtoYMD(dmy){
+  const [d,m,y]=dmy.split("/");
+  return `${y-543}-${m}-${d}`;
+}
+function formatDateBE(ymd){
+  const d=new Date(ymd);
+  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()+543}`;
+}
+
+/* ===== CRM Logic ===== */
+let entries=[], editingIndex=null;
+function daysSince(d){return Math.floor((new Date()-new Date(d))/(86400000));}
+function followClass(days){return days<=7?"follow-green":days<=14?"follow-yellow":days<=21?"follow-orange":"follow-red";}
+function followText(days){return days<=7?"ปกติ":days<=14?"ควรติดตาม":days<=21?"เร่งติดตาม":"เสี่ยงสูง";}
+
+function render(){
+  const tbody=document.querySelector("#crmTable tbody");
+  const mobile=document.getElementById("mobileList");
+  tbody.innerHTML=""; mobile.innerHTML="";
+  let g=0,y=0,o=0,r=0;
+
+  entries.forEach((e,i)=>{
+    const days=daysSince(e.follow_date);
+    const cls=followClass(days);
+    if(cls==="follow-green")g++; else if(cls==="follow-yellow")y++; else if(cls==="follow-orange")o++; else r++;
+
+    tbody.innerHTML+=`
+    <tr class="${cls}">
+      <td>${formatDateBE(e.follow_date)}</td>
+      <td>${e.name}</td>
+      <td>${e.contact}</td>
+      <td>${e.department}</td>
+      <td>${e.province}</td>
+      <td align="center">${days}</td>
+      <td>${followText(days)}</td>
+      <td>${e.note}</td>
+      <td>
+        <button class="small" onclick="editEntry(${i})">✏️</button>
+        <button class="small redbtn" onclick="deleteEntry(${i})">🗑</button>
+      </td>
+    </tr>`;
+
+    mobile.innerHTML+=`
+    <div class="mobile-card ${cls}">
+      <div class="row"><b>วันที่</b><span>${formatDateBE(e.follow_date)}</span></div>
+      <div class="row"><b>โรงพยาบาล</b><span>${e.name}</span></div>
+      <div class="row"><b>ผู้ติดต่อ</b><span>${e.contact}</span></div>
+      <div class="row"><b>แผนก</b><span>${e.department}</span></div>
+      <div class="row"><b>จังหวัด</b><span>${e.province}</span></div>
+      <div class="row"><b>สถานะ</b><span>${followText(days)}</span></div>
+      <div class="row"><b>รายละเอียด</b><span>${e.note}</span></div>
+      <div class="actions">
+        <button onclick="editEntry(${i})">✏️ แก้ไข</button>
+        <button class="redbtn" onclick="deleteEntry(${i})">🗑 ลบ</button>
+      </div>
+    </div>`;
+  });
+  dGreen.textContent=g; dYellow.textContent=y; dOrange.textContent=o; dRed.textContent=r;
+}
+
+function saveEntry(){
+  if(!fDate.value||!fName.value) return alert("กรอกข้อมูลไม่ครบ");
+  const data={
+    follow_date:dmyBEtoYMD(fDate.value),
+    name:fName.value,
+    contact:fContact.value,
+    department:fDepartment.value,
+    province:fProvince.value,
+    note:fNote.value
+  };
+  if(editingIndex===null) entries.push(data);
+  else entries[editingIndex]=data;
+  clearForm(); render();
+}
+function editEntry(i){
+  const e=entries[i];
+  fDate.value=formatDateBE(e.follow_date);
+  fName.value=e.name; fContact.value=e.contact;
+  fDepartment.value=e.department; fProvince.value=e.province;
+  fNote.value=e.note; editingIndex=i;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function deleteEntry(i){
+  if(confirm("ลบข้อมูลนี้?")){entries.splice(i,1);render();}
+}
+function clearForm(){
+  fDate.value=fName.value=fContact.value=fDepartment.value=fProvince.value=fNote.value="";
+  editingIndex=null;
+}
+render();
+</script>
+
+</body>
+</html>
